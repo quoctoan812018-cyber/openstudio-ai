@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"   # các action còn chạy Node 20 (đã bị loại bỏ) → ép chạy Node 24
 
 jobs:
   build:
@@ -15,7 +17,7 @@ jobs:
         include:
           - { name: windows-x64, os: windows-latest, uv: "win32 x64", dist: "dist:win", unpacked: "dist/installers/win-unpacked/OpenStudio AI.exe" }
           - { name: macos-arm64, os: macos-14, uv: "darwin arm64", dist: "dist:mac:arm64", unpacked: "" }
-          - { name: macos-x64, os: macos-13, uv: "darwin x64", dist: "dist:mac:x64", unpacked: "" }
+          - { name: macos-x64, os: macos-15-intel, uv: "darwin x64", dist: "dist:mac:x64", unpacked: "" }
           - { name: linux-x64, os: ubuntu-22.04, uv: "linux x64", dist: "dist:linux", unpacked: "dist/installers/linux-unpacked/openstudio-ai" }
     steps:
       - uses: actions/checkout@v4
