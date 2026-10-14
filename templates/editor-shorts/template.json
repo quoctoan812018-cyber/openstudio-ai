@@ -1,0 +1,16 @@
+{
+ "name": "Video dọc Shorts/TikTok",
+ "kind": "editor",
+ "description": "9:16 720p, cắt đầy khung",
+ "settings": {
+  "aspect": "9:16",
+  "quality": 720,
+  "fps": 30,
+  "fit": "crop"
+ },
+ "music": {
+  "volumeDb": -16,
+  "duck": true,
+  "fadeOut": 1.5
+ }
+}

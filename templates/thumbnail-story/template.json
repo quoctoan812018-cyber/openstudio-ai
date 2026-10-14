@@ -1,0 +1,19 @@
+{
+ "name": "Ảnh bìa dọc (Reels/TikTok)",
+ "kind": "thumbnail",
+ "description": "9:16, chữ giữa/trên, 3 biến thể",
+ "brief": {
+  "aspect": "9:16",
+  "layouts": [
+   "center",
+   "top",
+   "banner"
+  ],
+  "palettes": [
+   "ink",
+   "sun",
+   "mint"
+  ],
+  "count": 3
+ }
+}

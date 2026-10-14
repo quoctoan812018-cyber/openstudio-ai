@@ -1,0 +1,17 @@
+{
+ "name": "Bài đăng vuông (Facebook)",
+ "kind": "thumbnail",
+ "description": "1:1, hộp chữ ở dưới",
+ "brief": {
+  "aspect": "1:1",
+  "layouts": [
+   "banner",
+   "center"
+  ],
+  "palettes": [
+   "navy",
+   "mint"
+  ],
+  "count": 2
+ }
+}

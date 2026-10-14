@@ -1,0 +1,21 @@
+{
+ "name": "Tiêu đề đậm (YouTube)",
+ "kind": "thumbnail",
+ "description": "16:9, chữ lớn, 4 kiểu bố cục × màu tương phản",
+ "brief": {
+  "aspect": "16:9",
+  "layouts": [
+   "banner",
+   "center",
+   "left",
+   "top"
+  ],
+  "palettes": [
+   "navy",
+   "sun",
+   "fire",
+   "ink"
+  ],
+  "count": 4
+ }
+}

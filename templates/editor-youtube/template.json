@@ -1,0 +1,16 @@
+{
+ "name": "Video ngang YouTube",
+ "kind": "editor",
+ "description": "16:9 720p, nhạc nền tự hạ khi có lời",
+ "settings": {
+  "aspect": "16:9",
+  "quality": 720,
+  "fps": 25,
+  "fit": "pad"
+ },
+ "music": {
+  "volumeDb": -20,
+  "duck": true,
+  "fadeOut": 3
+ }
+}
