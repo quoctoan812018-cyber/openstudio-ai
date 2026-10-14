@@ -1,0 +1,15 @@
+# Cấu hình mặc định. Ghi đè bằng biến môi trường OPENSTUDIO_* (ví dụ OPENSTUDIO_DATA_DIR).
+[paths]
+data_dir = ".runtime"          # db, models, projects, logs, consent
+registry = "models/registry.yaml"
+
+[server]
+host = "127.0.0.1"             # KHÔNG đổi: daemon chỉ được nghe loopback
+port = 0                       # 0 = cổng ngẫu nhiên (web dev dùng 8787 qua scripts/dev.mjs)
+
+[llm]
+base_url = "http://127.0.0.1:11434/v1"
+model = "qwen3:4b"          # tag Ollama đang cài trên máy; đổi theo máy
+num_ctx = 8192                 # độ dài ngữ cảnh gửi cho Ollama (mặc định của Ollama có thể chỉ 4096 khi không có GPU)
+provider = "ollama"            # "ollama" (API gốc) hoặc "openai" (mọi máy chủ tương thích OpenAI)
+cloud_enabled = false          # nhà cung cấp cloud tắt mặc định ("Có thể mất phí")

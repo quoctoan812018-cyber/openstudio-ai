@@ -1,0 +1,8 @@
+packages:
+  - apps/web
+  - apps/desktop
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+  electron: true

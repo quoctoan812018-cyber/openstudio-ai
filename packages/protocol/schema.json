@@ -1,0 +1,697 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpenStudioProtocol",
+  "type": "object",
+  "properties": {
+    "ApiErrorResponse": {
+      "$ref": "#/$defs/ApiErrorResponse"
+    },
+    "Progress": {
+      "$ref": "#/$defs/Progress"
+    },
+    "Job": {
+      "$ref": "#/$defs/Job"
+    },
+    "Event": {
+      "$ref": "#/$defs/Event"
+    },
+    "Hardware": {
+      "$ref": "#/$defs/Hardware"
+    },
+    "Tool": {
+      "$ref": "#/$defs/Tool"
+    },
+    "ModelInfo": {
+      "$ref": "#/$defs/ModelInfo"
+    },
+    "Project": {
+      "$ref": "#/$defs/Project"
+    },
+    "ProjectCreate": {
+      "$ref": "#/$defs/ProjectCreate"
+    },
+    "ToolCommand": {
+      "$ref": "#/$defs/ToolCommand"
+    },
+    "JobCreate": {
+      "$ref": "#/$defs/JobCreate"
+    },
+    "ModelDownloadRequest": {
+      "$ref": "#/$defs/ModelDownloadRequest"
+    },
+    "UserSettings": {
+      "$ref": "#/$defs/UserSettings"
+    },
+    "LibraryFile": {
+      "$ref": "#/$defs/LibraryFile"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ApiErrorBody": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "ApiErrorResponse": {
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/ApiErrorBody"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "type": "object"
+    },
+    "Event": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "jobId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ts": {
+          "type": "number"
+        },
+        "data": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "ts"
+      ],
+      "type": "object"
+    },
+    "Gpu": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "vram_gb": {
+          "type": "number"
+        },
+        "driver": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "vendor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "vram_gb",
+        "vendor"
+      ],
+      "type": "object"
+    },
+    "Hardware": {
+      "properties": {
+        "os": {
+          "type": "string"
+        },
+        "cpu": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "ram_gb": {
+          "type": "number"
+        },
+        "gpus": {
+          "items": {
+            "$ref": "#/$defs/Gpu"
+          },
+          "type": "array"
+        },
+        "cuda_available": {
+          "type": "boolean"
+        },
+        "tier": {
+          "enum": [
+            "cpu",
+            "gpu8",
+            "gpu12",
+            "gpu16plus"
+          ],
+          "type": "string"
+        },
+        "tier_label": {
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "os",
+        "cpu",
+        "ram_gb",
+        "gpus",
+        "cuda_available",
+        "tier",
+        "tier_label"
+      ],
+      "type": "object"
+    },
+    "Job": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "type": "string"
+        },
+        "progress": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Progress"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApiErrorBody"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "result": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "startedAt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "finishedAt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "status",
+        "createdAt"
+      ],
+      "type": "object"
+    },
+    "JobCreate": {
+      "properties": {
+        "type": {
+          "const": "demo.sleep",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "LibraryFile": {
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer"
+        },
+        "modifiedAt": {
+          "type": "number"
+        },
+        "kind": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "path",
+        "bytes",
+        "modifiedAt",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "ModelDownloadRequest": {
+      "properties": {
+        "acknowledge_non_commercial": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "ModelInfo": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "capability": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "code_license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "weights_license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "commercial_ok": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "non_commercial": {
+          "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "warning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "downloadable": {
+          "type": "boolean"
+        },
+        "size_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "enum": [
+            "not_installed",
+            "downloading",
+            "installed"
+          ],
+          "type": "string"
+        },
+        "downloadJobId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "capability",
+        "role",
+        "non_commercial",
+        "verified",
+        "downloadable",
+        "status"
+      ],
+      "type": "object"
+    },
+    "Progress": {
+      "properties": {
+        "phase": {
+          "type": "string"
+        },
+        "percent": {
+          "type": "number"
+        },
+        "message": {
+          "default": "",
+          "type": "string"
+        },
+        "completed": {
+          "default": 0,
+          "type": "integer"
+        },
+        "failed": {
+          "default": 0,
+          "type": "integer"
+        },
+        "total": {
+          "default": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "phase",
+        "percent"
+      ],
+      "type": "object"
+    },
+    "Project": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "settings": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "createdAt"
+      ],
+      "type": "object"
+    },
+    "ProjectCreate": {
+      "properties": {
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "Tool": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "min_tier": {
+          "enum": [
+            "cpu",
+            "gpu8",
+            "gpu12",
+            "gpu16plus"
+          ],
+          "type": "string"
+        },
+        "phase": {
+          "type": "integer"
+        },
+        "implemented": {
+          "type": "boolean"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "locked_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "min_tier",
+        "phase",
+        "implemented",
+        "available"
+      ],
+      "type": "object"
+    },
+    "ToolCommand": {
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "expectedRevision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "UserSettings": {
+      "properties": {
+        "language": {
+          "default": "vi",
+          "enum": [
+            "vi",
+            "en"
+          ],
+          "type": "string"
+        },
+        "ai_label_metadata": {
+          "default": true,
+          "type": "boolean"
+        },
+        "ai_label_watermark": {
+          "default": false,
+          "type": "boolean"
+        },
+        "cloud_providers_enabled": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

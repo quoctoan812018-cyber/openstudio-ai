@@ -1,0 +1,292 @@
+# OpenStudio AI — Model Registry (bản nháp GĐ0, tra cứu ngày 2026-10-13)
+# verified: true  = đã đọc trực tiếp từ GitHub API / HuggingFace API / model card
+# verified: false = lấy từ nguồn thứ cấp hoặc kiến thức nền → PHẢI kiểm tra lại trước khi tích hợp (GĐ liên quan)
+# non_commercial: true => UI hiển thị cảnh báo, không đóng gói sẵn trọng số.
+# tier: cpu | gpu8 | gpu12 | gpu16plus  (hạng phần cứng tối thiểu để dùng chế độ chất lượng thường)
+
+schema_version: 1
+
+capabilities:
+
+  llm:
+    default:
+      id: qwen-ollama
+      name: Qwen (qua Ollama) — chọn cỡ theo phần cứng
+      source: "ollama pull qwen3.6 (tag cỡ nhỏ: kiểm tra thư viện Ollama)"
+      code_license: Apache-2.0
+      weights_license: Apache-2.0
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu            # cỡ 4B–8B chạy CPU chậm; 27B cần GPU ~24GB
+      vietnamese_quality: "chưa có benchmark — phải tự đánh giá ở GĐ2"
+      verified: false
+      notes: "Dòng Qwen đa phần Apache-2.0. Có nguồn nói Qwen3.8 đã mở trọng số (8/2026) nhưng chỉ 1 nguồn → coi là chưa xác nhận."
+    fallback:
+      id: gemma-ollama
+      name: Gemma (qua Ollama)
+      weights_license: "Gemma Terms of Use (tuỳ chỉnh, không phải OSI)"
+      commercial_ok: true   # có điều kiện
+      verified: false
+      notes: "Dự phòng cho máy yếu. Đọc kỹ điều khoản trước khi bật mặc định."
+
+  translation:
+    default: { id: llm-translate, name: "Dịch bằng LLM cục bộ (Qwen) có bảng thuật ngữ", weights_license: Apache-2.0, commercial_ok: true, non_commercial: false, tier: cpu, verified: false }
+    fallback:
+      id: madlad400-3b-mt
+      name: MADLAD-400 3B MT
+      hf: allenai/madlad400-3b-mt
+      weights_license: Apache-2.0
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu
+      verified: true       # HF API: apache-2.0, cập nhật 2026-02-24
+      notes: "419 ngôn ngữ; cần kiểm tra danh sách ngôn ngữ có tiếng Việt/Trung/Nhật/Hàn trên model card. Dữ liệu train ODC-BY."
+    excluded:
+      - id: nllb-200
+        weights_license: CC-BY-NC-4.0
+        non_commercial: true
+        verified: false
+        notes: "Chỉ bật như tuỳ chọn người dùng tự tải, gắn cờ NC."
+
+  stt:
+    default:
+      id: faster-whisper-large-v3
+      name: faster-whisper + Systran/faster-whisper-large-v3
+      code_license: MIT       # verified GitHub API
+      weights_license: MIT    # verified HF API
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu               # CPU dùng cỡ small/medium int8; GPU dùng large-v3
+      verified: true
+      notes: "Hỗ trợ word_timestamps gốc → dùng làm căn thời gian mặc định, không cần WhisperX."
+    small:
+      id: faster-whisper-tiny
+      name: faster-whisper tiny (75MB — dùng để thử Model Manager và máy yếu)
+      weights_license: MIT
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu
+      verified: true
+      download:
+        dest: stt/faster-whisper-tiny
+        files:
+          - { url: "https://huggingface.co/Systran/faster-whisper-tiny/resolve/main/model.bin", path: model.bin, bytes: 75538270, sha256: "dcb76c6586fc06cbdac6dd21f14cfd129cc4cdd9dce19bf4ffa62e59cbe6e6d1" }
+          - { url: "https://huggingface.co/Systran/faster-whisper-tiny/resolve/main/config.json", path: config.json, bytes: 2249 }
+          - { url: "https://huggingface.co/Systran/faster-whisper-tiny/resolve/main/tokenizer.json", path: tokenizer.json, bytes: 2203239 }
+          - { url: "https://huggingface.co/Systran/faster-whisper-tiny/resolve/main/vocabulary.txt", path: vocabulary.txt, bytes: 459861 }
+    medium_small:
+      id: faster-whisper-small
+      name: faster-whisper small (460MB — máy yếu/RAM thấp)
+      hf: Systran/faster-whisper-small
+      weights_license: MIT
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu
+      verified: true
+      download:
+        dest: stt/faster-whisper-small
+        files:
+          - { url: "https://huggingface.co/Systran/faster-whisper-small/resolve/main/model.bin", path: model.bin, bytes: 483546902, sha256: "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671" }
+          - { url: "https://huggingface.co/Systran/faster-whisper-small/resolve/main/config.json", path: config.json, bytes: 2370 }
+          - { url: "https://huggingface.co/Systran/faster-whisper-small/resolve/main/tokenizer.json", path: tokenizer.json, bytes: 2203239 }
+          - { url: "https://huggingface.co/Systran/faster-whisper-small/resolve/main/vocabulary.txt", path: vocabulary.txt, bytes: 459861 }
+    turbo:
+      id: faster-whisper-large-v3-turbo
+      name: faster-whisper large-v3-turbo (1.5GB — chất lượng tốt, nhanh hơn large-v3)
+      hf: mobiuslabsgmbh/faster-whisper-large-v3-turbo
+      weights_license: MIT
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu
+      verified: true
+      download:
+        dest: stt/faster-whisper-large-v3-turbo
+        files:
+          - { url: "https://huggingface.co/mobiuslabsgmbh/faster-whisper-large-v3-turbo/resolve/main/model.bin", path: model.bin, bytes: 1617884929, sha256: "e76620f83d5f5b69efd3d87e3dc180c1bd21df9fbebacfd4335e5e1efcc018da" }
+          - { url: "https://huggingface.co/mobiuslabsgmbh/faster-whisper-large-v3-turbo/resolve/main/config.json", path: config.json, bytes: 2263 }
+          - { url: "https://huggingface.co/mobiuslabsgmbh/faster-whisper-large-v3-turbo/resolve/main/preprocessor_config.json", path: preprocessor_config.json, bytes: 340 }
+          - { url: "https://huggingface.co/mobiuslabsgmbh/faster-whisper-large-v3-turbo/resolve/main/tokenizer.json", path: tokenizer.json, bytes: 2710337 }
+          - { url: "https://huggingface.co/mobiuslabsgmbh/faster-whisper-large-v3-turbo/resolve/main/vocabulary.json", path: vocabulary.json, bytes: 1068114 }
+    fallback:
+      id: whisper-cpp
+      weights_license: "MIT (code); trọng số Whisper MIT"
+      name: whisper.cpp
+      code_license: MIT
+      verified: false
+    optional_alignment:
+      - { id: whisperx, name: WhisperX, weights_license: "chưa xác nhận (dùng kèm wav2vec2)", code_license: "BSD-2-Clause (cần xác nhận)", verified: false, notes: "Chỉ thêm nếu word_timestamps của faster-whisper chưa đủ chính xác" }
+
+  tts:
+    default_vi:
+      id: vieneu-tts-v3-turbo
+      name: VieNeu-TTS v3 Turbo (ONNX, chạy CPU, nhân bản giọng từ mẫu ngắn)
+      hf: pnnbao-ump/VieNeu-TTS-v3-Turbo
+      code_license: Apache-2.0
+      weights_license: Apache-2.0
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu
+      voice_clone: true       # mẫu 3–8 giây được dùng; có watermark âm thanh tích hợp
+      verified: true          # license: HF API (model + codec MOSS đều apache-2.0), SHA-256 từ LFS
+      notes: "Gồm backbone ONNX fp32 (~540MB) + codec OpenMOSS Audio-Tokenizer-Nano (Apache-2.0). Giọng có sẵn do mô hình cung cấp (tổng hợp); tự kiểm tra điều khoản khi dùng thương mại."
+      download:
+        dest: tts/vieneu-v3-turbo
+        files:
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/config.json", path: config.json, bytes: 1553 }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/tokenizer.json", path: tokenizer.json, bytes: 22412 }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/speaker_encoder.onnx", path: speaker_encoder.onnx, bytes: 28303423, sha256: "a6ac6a63997761ae2997373e2ee1c47040854b4b759ea41ec48e4e42df0f4d73" }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/denoiser.onnx", path: denoiser.onnx, bytes: 42661414, sha256: "b7621953291cfe05e695a9c0ff4255aa2f93239fc17c26627e18b7b6b8f72f0b" }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/config.json", path: onnx_update/config.json, bytes: 2152 }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/tokenizer.json", path: onnx_update/tokenizer.json, bytes: 22320 }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/vieneu_acoustic_cached.onnx", path: onnx_update/vieneu_acoustic_cached.onnx, bytes: 7207223, sha256: "f631e3387c788c3d8b9a5ac5df94952af5bc4c4d1049ff8a751e76a246fff2d4" }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/vieneu_backbone_shared.data", path: onnx_update/vieneu_backbone_shared.data, bytes: 415319040, sha256: "c7c072193db33d0542457e2612c7272c44c4279d1cafaf0aa4c379964911db2f" }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/vieneu_decode_step.onnx", path: onnx_update/vieneu_decode_step.onnx, bytes: 306134, sha256: "bedc379cea61ea5d616312750d95ad3924e055856662d19187a889a5edc24ceb" }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/vieneu_prefill.onnx", path: onnx_update/vieneu_prefill.onnx, bytes: 324499, sha256: "27f8b064f6b57b5448e95d095f1959588c005d614678045c2b97ecccf3b7a0f7" }
+          - { url: "https://huggingface.co/pnnbao-ump/VieNeu-TTS-v3-Turbo/resolve/main/onnx_update/vieneu_v3_heads.npz", path: onnx_update/vieneu_v3_heads.npz, bytes: 52219622, sha256: "fb22484baa424bbb775133a6e5f0d00d6299b2b256fbe3312a864b85b9aed01e" }
+          - { url: "https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX/resolve/main/codec_browser_onnx_meta.json", path: codec/codec_browser_onnx_meta.json, bytes: 17036 }
+          - { url: "https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX/resolve/main/moss_audio_tokenizer_decode_full.onnx", path: codec/moss_audio_tokenizer_decode_full.onnx, bytes: 681902, sha256: "0fbbafe3fd4afa2a019af5c5ced204af6e2d1db044fa40f021525d2aee95b4ac" }
+          - { url: "https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX/resolve/main/moss_audio_tokenizer_decode_shared.data", path: codec/moss_audio_tokenizer_decode_shared.data, bytes: 44198912, sha256: "e69d52e0f4e84ca27850557ee54face46632d3a5a16c89bd246c7c408466dcad" }
+          - { url: "https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX/resolve/main/moss_audio_tokenizer_decode_step.onnx", path: codec/moss_audio_tokenizer_decode_step.onnx, bytes: 351400, sha256: "9527c86a29e1837edec1f74db57d5eeaadb3a715af3382703566460afed25855" }
+          - { url: "https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX/resolve/main/moss_audio_tokenizer_encode.data", path: codec/moss_audio_tokenizer_encode.data, bytes: 44507136, sha256: "aa751265b2bab2887eac224484546b194875aa7494b607115439b3dc6b228a2c" }
+          - { url: "https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX/resolve/main/moss_audio_tokenizer_encode.onnx", path: codec/moss_audio_tokenizer_encode.onnx, bytes: 815775, sha256: "eadea4a645abdcf98714c7aead122ee2ce7da6e080f9f80b977cd1ca8e19473a" }
+    default_en:
+      id: kokoro-82m-onnx
+      name: Kokoro-82M (ONNX, đa ngôn ngữ trừ tiếng Việt)
+      code_license: "MIT (kokoro-onnx)"
+      weights_license: Apache-2.0
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu
+      verified: true
+      notes: "Hỗ trợ en/ja/zh/es/fr/hi/it/pt, không có tiếng Việt. SHA-256 do OpenStudio tự tính khi ghim phiên bản (GitHub release không công bố checksum)."
+      download:
+        dest: tts/kokoro-82m-onnx
+        files:
+          - { url: "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx", path: kokoro-v1.0.onnx, bytes: 325532387, sha256: "7d5df8ecf7d4b1878015a32686053fd0eebe2bc377234608764cc0ef3636a6c5" }
+          - { url: "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin", path: voices-v1.0.bin, bytes: 28214398, sha256: "bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d" }
+    fallback:
+      - id: g-omnivoice
+        name: G-OmniVoice (Vi)
+        weights_license: Apache-2.0
+        tier: gpu8
+        verified: false
+        notes: "Mô hình 2026, chưa có lịch sử cộng đồng; model gated trên HF."
+      - id: piper
+        name: Piper (rhasspy/piper-voices)
+        code_license: GPL-3.0     # repo OHF-Voice/piper1-gpl — verified
+        weights_license: "mỗi giọng một license (tag HF: MIT cho repo, nhưng kiểm tra từng giọng vi_VN)"
+        tier: cpu
+        verified: true
+        notes: "⚠ Mã GPL-3.0 → KHÔNG import vào mã Apache-2.0. Chỉ gọi như tiến trình ngoài, plugin tuỳ chọn người dùng tự cài."
+      - id: edge-tts
+        name: Edge TTS
+        weights_license: "dịch vụ trực tuyến của Microsoft, không chính thức"
+        commercial_ok: false
+        verified: false
+        notes: "Cần mạng, điều khoản không rõ ràng. Tuỳ chọn tắt mặc định, gắn nhãn 'dịch vụ ngoài'."
+    excluded:
+      - id: f5-tts
+        code_license: MIT
+        weights_license: CC-BY-NC-4.0
+        non_commercial: true
+        verified: true
+        notes: "Trọng số chính thức huấn luyện trên Emilia → NC, lan sang bản fine-tune. Chỉ là tuỳ chọn có cờ NC."
+
+  voice_clone:
+    default: { ref: tts.default_vi }
+    fallback:
+      id: openvoice-v2
+      code_license: MIT      # verified GitHub API
+      weights_license: "MIT (cần xác nhận trên model card)"
+      tier: cpu
+      verified: false
+      notes: "Repo lần cuối cập nhật 2025-04; kiểm tra chất lượng tiếng Việt."
+    consent_required: true
+
+  source_separation:
+    default:
+      id: demucs-htdemucs
+      name: Demucs htdemucs (tách giọng/nhạc nền)
+      code_license: MIT
+      weights_license: MIT
+      commercial_ok: true
+      non_commercial: false
+      tier: cpu              # chạy được trên CPU, chậm
+      verified: true         # tiền tố tên file 8726e21a khớp SHA-256 (quy ước torch.hub của Demucs)
+      notes: "Code MIT. Trọng số do Meta phát hành cùng repo MIT; trên HF có thảo luận về việc gắn nhãn license nên vẫn nên đọc lại trước khi phát hành thương mại."
+      download:
+        dest: separation/htdemucs
+        files:
+          - { url: "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/955717e8-8726e21a.th", path: 955717e8-8726e21a.th, bytes: 84141911, sha256: "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4" }
+
+  lipsync_avatar:
+    default_fast:
+      id: musetalk-1.5
+      code_license: "NOASSERTION trên GitHub (phải đọc file LICENSE)"
+      weights_license: "HF cardData: MIT; nguồn thứ cấp cảnh báo dữ liệu huấn luyện có thể ràng buộc"
+      tier: gpu8
+      verified: false
+      notes: "Nhanh/thời gian thực. Phải đọc LICENSE + model card + điều khoản dataset trước GĐ4."
+    default_quality:
+      id: latentsync-1.5
+      weights_license: "chưa xác nhận (code Apache-2.0)"
+      code_license: Apache-2.0    # verified GitHub API (repo bytedance/LatentSync)
+      tier: gpu8                  # v1.5 ~8GB (nguồn thứ cấp)
+      verified: false
+      notes: "v1.6 (512px) cần ~18GB VRAM → chỉ hạng gpu16plus."
+    optional_motion:
+      id: liveportrait
+      code_license: MIT
+      weights_license: MIT
+      verified: false
+      notes: "⚠ Bộ phát hiện mặc định InsightFace (buffalo_l) là NC. Chỉ dùng nếu thay bằng MediaPipe. Mặc định: KHÔNG bật."
+    excluded:
+      - { id: wav2lip, weights_license: "Phi thương mại (chưa xác nhận chi tiết)", non_commercial: true, verified: false }
+      - { id: sadtalker, weights_license: "chưa xác nhận", verified: false, notes: "chưa kiểm tra license; không dùng mặc định" }
+
+  image:
+    default:
+      id: flux2-klein-4b
+      hf: black-forest-labs/FLUX.2-klein-4B
+      weights_license: Apache-2.0
+      commercial_ok: true
+      non_commercial: false
+      tier: gpu12     # BFL nói ~13GB VRAM; hạng 6–8GB cần bản lượng tử hoá/offload → phải benchmark
+      verified: true  # license từ HF API; VRAM từ blog BFL qua tìm kiếm
+    fallback:
+      id: flux1-schnell
+      weights_license: Apache-2.0
+      tier: gpu12
+      verified: false   # nguồn thứ cấp + thảo luận HF
+    excluded:
+      - { id: flux2-klein-9b, weights_license: "FLUX Non-Commercial", non_commercial: true, verified: false }
+      - { id: flux1-dev,      weights_license: "FLUX.1 Non-Commercial", non_commercial: true, verified: false }
+
+  video:
+    default:
+      id: wan2.2-ti2v-5b
+      hf: Wan-AI/Wan2.2-TI2V-5B
+      weights_license: Apache-2.0
+      commercial_ok: true
+      non_commercial: false
+      tier: gpu16plus
+      verified: true      # license từ HF API; VRAM chưa xác minh
+    fallback:
+      id: ltx-2.x
+      conditional_license: true   # miễn phí có điều kiện (doanh thu < 10 triệu USD) — không phải NC thuần, nhưng phải hiện cảnh báo
+      weights_license: "LTX-2 Community License (miễn phí NC và dưới 10 triệu USD doanh thu; không phải OSI)"
+      commercial_ok: "có điều kiện"
+      tier: gpu16plus     # nguồn mâu thuẫn: 16GB (bản lượng tử) đến 32GB
+      verified: false
+    excluded:
+      - { id: cogvideox-5b, weights_license: "other (xem file LICENSE trên HF)", verified: true, notes: "Chưa đọc nội dung license; loại khỏi mặc định" }
+
+  music:
+    default: { id: cc0-library, weights_license: "CC0 (nhạc do OpenStudio tự sinh); nhạc người dùng thêm tự khai báo", name: "Thư viện nhạc CC0/CC-BY do người dùng thêm", commercial_ok: true, tier: cpu, verified: true }
+    optional:
+      - { id: stable-audio-open, weights_license: "Stability Community License (cần xác nhận)", tier: gpu12, verified: false }
+    excluded:
+      - { id: musicgen, code_license: MIT, weights_license: CC-BY-NC-4.0, non_commercial: true, verified: false }
+
+  scene_detection:
+    default: { id: pyscenedetect, weights_license: "không có trọng số", code_license: "BSD-3-Clause (cần xác nhận)", tier: cpu, verified: false }

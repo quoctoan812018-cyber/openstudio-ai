@@ -1,0 +1,37 @@
+{
+  "name": "openstudio-ai",
+  "private": true,
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "daemon:dev": "node scripts/daemon.mjs",
+    "web:dev": "pnpm --filter @openstudio/web dev",
+    "protocol:gen": "node scripts/gen-protocol.mjs",
+    "test": "pnpm test:daemon && pnpm test:web && pnpm test:desktop",
+    "test:daemon": "uv run --directory apps/daemon pytest",
+    "test:web": "pnpm --filter @openstudio/web test",
+    "typecheck": "pnpm --filter @openstudio/web typecheck",
+    "desktop:dev": "pnpm --filter @openstudio/desktop dev",
+    "build:web": "pnpm --filter @openstudio/web build",
+    "lint": "pnpm lint:js && pnpm lint:py",
+    "lint:js": "eslint .",
+    "lint:py": "uv run --project apps/daemon ruff check --config apps/daemon/pyproject.toml apps/daemon scripts",
+    "test:desktop": "pnpm --filter @openstudio/desktop test",
+    "check:licenses": "uv run --project apps/daemon python scripts/check_licenses.py",
+    "doctor": "uv run --project apps/daemon python -m openstudio.doctor",
+    "fetch-uv": "node scripts/fetch-uv.mjs",
+    "dist:win": "pnpm build:web && node scripts/fetch-uv.mjs win32 x64 && pnpm --filter @openstudio/desktop dist:win",
+    "dist:linux": "pnpm build:web && node scripts/fetch-uv.mjs linux x64 && pnpm --filter @openstudio/desktop dist:linux",
+    "dist:mac:arm64": "pnpm build:web && node scripts/fetch-uv.mjs darwin arm64 && pnpm --filter @openstudio/desktop dist:mac:arm64",
+    "dist:mac:x64": "pnpm build:web && node scripts/fetch-uv.mjs darwin x64 && pnpm --filter @openstudio/desktop dist:mac:x64"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.13.0",
+    "typescript-eslint": "^8.71.2"
+  },
+  "packageManager": "pnpm@12.11.2"
+}

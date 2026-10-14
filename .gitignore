@@ -1,0 +1,16 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.runtime/
+dist/
+*.tsbuildinfo
+OpenCreator-master/
+OpenCreator-master.zip
+reference/
+.env
+
+apps/daemon/tests/fixtures/*.mp3
+apps/daemon/tests/fixtures/*.mp4
+apps/desktop/build/
