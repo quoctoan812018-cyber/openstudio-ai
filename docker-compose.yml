@@ -1,0 +1,27 @@
+# Chạy:  OPENSTUDIO_TOKEN=<chuỗi-bí-mật-dài> docker compose up --build
+# Mở http://127.0.0.1:8787 → nhập địa chỉ + token. Ollama chạy trên máy chủ (hoặc bật profile "ollama" bên dưới).
+services:
+  openstudio:
+    build: .
+    image: openstudio-ai:local
+    ports:
+      - "127.0.0.1:8787:8787"          # CHỈ loopback của máy chủ — đừng đổi thành 0.0.0.0:8787 / "8787:8787"
+    environment:
+      OPENSTUDIO_TOKEN: ${OPENSTUDIO_TOKEN:?Hãy đặt OPENSTUDIO_TOKEN (chuỗi bí mật dài, ví dụ openssl rand -hex 24)}
+      OPENSTUDIO_LLM_BASE_URL: ${OPENSTUDIO_LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      OPENSTUDIO_LLM_MODEL: ${OPENSTUDIO_LLM_MODEL:-qwen3:4b}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - openstudio-data:/data
+    restart: unless-stopped
+
+  ollama:                               # tuỳ chọn: docker compose --profile ollama up   (rồi đặt OPENSTUDIO_LLM_BASE_URL=http://ollama:11434/v1)
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  openstudio-data:
+  ollama-data:
