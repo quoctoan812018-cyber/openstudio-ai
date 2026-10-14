@@ -25,7 +25,7 @@ def test_tool_schemas_are_strict_flat_and_validate(client):
     assert {"subtitles_transcribe", "dubbing_mix", "podcast_produce", "highlights_export", "ask_user", "draft_text", "download_model"} <= set(tools)
     approvals = {n: t["approval"] for n, t in tools.items() if t["approval"]}
     assert approvals == {"download_model": "download", "subtitles_burn": "render", "dubbing_mix": "render", "highlights_export": "render",
-                         "highlights_summary": "render", "podcast_produce": "render", "editor_render": "render", "avatar_make": "render"}
+                         "highlights_summary": "render", "podcast_produce": "render", "editor_render": "render", "avatar_make": "render", "image_generate": "render", "video_from_image": "render"}
     assert tools["subtitles_translate"]["schema"]["properties"]["targets"]["minItems"] == 1
     assert not any('"title"' in json.dumps(t["schema"]) and "properties" not in t["schema"] for t in tools.values())
     assert "$ref" not in json.dumps([t["schema"] for t in tools.values()])      # grammar Ollama không cần giải tham chiếu

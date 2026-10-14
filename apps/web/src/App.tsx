@@ -10,7 +10,9 @@ import { Highlights } from "./pages/Highlights";
 import { Avatar } from "./pages/Avatar";
 import { Campaign } from "./pages/Campaign";
 import { Editor } from "./pages/Editor";
+import { ImageGen } from "./pages/ImageGen";
 import { Thumbnail } from "./pages/Thumbnail";
+import { VideoGen } from "./pages/VideoGen";
 import { Podcast } from "./pages/Podcast";
 import { Agent } from "./pages/Agent";
 import { Skills } from "./pages/Skills";
@@ -31,6 +33,8 @@ function Shell() {
         <NavLink to="/tools/highlights" className={link}>{t("nav.highlights")}</NavLink>
         <NavLink to="/tools/podcast" className={link}>{t("nav.podcast")}</NavLink>
         <NavLink to="/tools/avatar" className={link}>{t("nav.avatar")}</NavLink>
+        <NavLink to="/tools/image" className={link}>{t("nav.image")}</NavLink>
+        <NavLink to="/tools/video" className={link}>{t("nav.video")}</NavLink>
         <NavLink to="/tools/editor" className={link}>{t("nav.editor")}</NavLink>
         <NavLink to="/tools/thumbnail" className={link}>{t("nav.thumbnail")}</NavLink>
         <NavLink to="/tools/campaign" className={link}>{t("nav.campaign")}</NavLink>
@@ -48,6 +52,8 @@ function Shell() {
           <Route path="/tools/highlights" element={<Highlights />} />
           <Route path="/tools/podcast" element={<Podcast />} />
           <Route path="/tools/avatar" element={<Avatar />} />
+          <Route path="/tools/image" element={<ImageGen />} />
+          <Route path="/tools/video" element={<VideoGen />} />
           <Route path="/tools/editor" element={<Editor />} />
           <Route path="/tools/thumbnail" element={<Thumbnail />} />
           <Route path="/tools/campaign" element={<Campaign />} />

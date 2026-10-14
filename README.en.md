@@ -18,7 +18,9 @@ A **local-first** AI content studio — free, open source ([Apache-2.0](LICENSE)
 | **Video editor** | Cut/join, speed, transitions, text, overlays, music that ducks under speech, quick preview, 16:9 · 9:16 · 1:1 (FFmpeg) | CPU |
 | **Thumbnails & Templates** | Image/video frame + accented title, several variants; reusable templates | CPU |
 | **AI avatar (voice-driven animation)** | Portrait speaks along with a voice, with background/frame/subtitles; real-person photos need consent. *Not AI lip-sync* | CPU |
-| AI lip-sync, AI image/video generation | **Not built yet** (need a GPU; tools are locked on machines without enough VRAM) | GPU |
+| **AI image generation** | Quantized FLUX.2 klein 4B (Apache-2.0) on CPU via stable-diffusion.cpp — **slow** (~3–4 min for a 512 px image); ~5 GB one-time download | CPU (slow) |
+| **Image → video** | Zoom/pan over a still image (FFmpeg). *Not AI video generation* | CPU |
+| AI lip-sync, AI video generation | **Not built yet** (need a large GPU) | GPU |
 
 Honest status, risks and known limits: [docs/PROGRESS.md](docs/PROGRESS.md) · release verification: [docs/RELEASE_CHECK.md](docs/RELEASE_CHECK.md) · architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (Vietnamese).
 

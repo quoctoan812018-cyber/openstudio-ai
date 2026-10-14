@@ -27,6 +27,11 @@ Mọi mục "?" là việc bắt buộc của giai đoạn tích hợp tương �
 - **Wav2Lip** — NC ?.
 - **LivePortrait + InsightFace** — LivePortrait MIT nhưng InsightFace buffalo_l là NC; chỉ dùng khi thay bằng MediaPipe.
 
+## Ghi chú GĐ5B (2026-10-14) — tạo ảnh trên CPU
+- **FLUX.2 klein 4B GGUF** (`leejet/FLUX.2-klein-4B-GGUF`), **Qwen3-4B GGUF** (`unsloth/Qwen3-4B-GGUF`), **FLUX.2 VAE** (`unsloth/FLUX.2-VAE`, bản mirror): đều `apache-2.0` theo HF API ✔, không cần đăng nhập; SHA-256 lấy từ LFS và đã kiểm lại sau khi tải ✔. Bản 9B của klein là FLUX Non-Commercial (vẫn nằm trong danh sách loại).
+- **stable-diffusion.cpp** (`leejet/stable-diffusion.cpp`, MIT): bản `master-964-1d0a58a`; SHA-256 theo digest GitHub, khớp sau khi tải ✔. Bản Linux/macOS chưa chạy thử.
+- Đầu ra của mô hình Apache-2.0 không bị ràng buộc thêm bởi OpenStudio; người dùng chịu trách nhiệm về nội dung (không dùng để mạo danh người thật).
+
 ## Mã trong registry.yaml của các mô hình phi thương mại (`non_commercial: true`)
 `nllb-200`, `f5-tts`, `wav2lip`, `flux2-klein-9b`, `flux1-dev`, `musicgen`. Không đóng gói trọng số; nếu sau này cho tải, UI phải hiện cảnh báo và người dùng xác nhận.
 `scripts/check_licenses.py` (chạy trong CI) kiểm các quy tắc này tự động.

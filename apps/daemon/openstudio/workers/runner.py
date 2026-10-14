@@ -25,7 +25,7 @@ def kill_tree(pid: int) -> None:
 
 
 def run_process(cmd: list[str], *, cwd: Path | None = None, env: dict | None = None,
-                on_line: Callable[[str], None], cancelled: Callable[[], bool]) -> tuple[int, str]:
+                on_line: Callable[[str], None], cancelled: Callable[[], bool], on_err_line: Callable[[str], None] | None = None) -> tuple[int, str]:
     """Trả về (exit_code, đuôi stderr). Nếu `cancelled()` thành True: kill và ném JobCancelled."""
     proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                             encoding="utf-8", errors="replace", bufsize=1,
@@ -44,6 +44,8 @@ def run_process(cmd: list[str], *, cwd: Path | None = None, env: dict | None = N
         for line in proc.stderr:
             err_tail.append(line)
             del err_tail[:-40]
+            if on_err_line:
+                on_err_line(line.rstrip("\r\n"))
 
     threads = [threading.Thread(target=pump_out, daemon=True), threading.Thread(target=pump_err, daemon=True)]
     for t in threads:

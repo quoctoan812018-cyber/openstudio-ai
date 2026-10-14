@@ -67,6 +67,16 @@ class LLMClient:
         except Exception as e:  # noqa: BLE001
             return {"available": False, "model": self.model, "model_installed": False, "models": [], "error": str(e)[:200]}
 
+    def unload(self) -> None:
+        """Nhả mô hình khỏi RAM (Ollama keep_alive=0) trước các job nặng RAM khác; lỗi thì bỏ qua."""
+        if self.provider != "ollama":
+            return
+        try:
+            with self._client() as c:
+                c.post(f"{self.base_url.removesuffix('/v1')}/api/generate", json={"model": self.model, "keep_alive": 0}, timeout=10)
+        except Exception:  # noqa: BLE001, S110
+            pass
+
     def require(self) -> None:
         s = self.status()
         if not s["available"]:

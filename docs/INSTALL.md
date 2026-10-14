@@ -14,6 +14,8 @@ OpenStudio tự phát hiện máy (Cài đặt → *Phần cứng*) và **khoá 
 
 Mốc đo thật trên máy CPU của nhóm phát triển (không GPU, RAM trống thường 2–5 GB, qwen3:4b + Whisper turbo + VieNeu/Kokoro, 2026-10-14): chiến dịch 3 ngôn ngữ từ video 70 s ≈ 12 phút (transcript ~70 s, kế hoạch ~45 s, 15 bài + dịch + 3 video ≈ 9–10 phút); lồng tiếng video 2 phút ≈ 6 phút (transcript ~2 phút); podcast ~90 s âm thanh ≈ 3 phút. Máy yếu hơn sẽ chậm hơn rõ rệt. **RAM ≥ 8 GB trống** khuyến nghị khi chạy cùng lúc Ollama và các mô hình giọng.
 
+**Tạo ảnh AI (tuỳ chọn):** thêm ~5,3 GB (FLUX.2 klein Q4 2,5 GB + Qwen3-4B 2,5 GB + VAE 0,3 GB) và cần RAM trống ≥ 8 GB khi tạo ảnh (app tự nhả mô hình của Ollama). Đo thật trên CPU của nhóm: ảnh 512 px ≈ 3–4 phút. Tải ở trang *Tạo ảnh AI* hoặc Cài đặt → Mô hình.
+
 ## 2. Phần mềm đi kèm bắt buộc / tuỳ chọn
 
 | Thành phần | Bộ cài có đóng gói? | Cách cài |

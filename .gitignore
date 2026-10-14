@@ -14,3 +14,4 @@ reference/
 apps/daemon/tests/fixtures/*.mp3
 apps/daemon/tests/fixtures/*.mp4
 apps/desktop/build/
+.claude/

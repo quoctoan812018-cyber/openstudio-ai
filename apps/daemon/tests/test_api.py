@@ -54,7 +54,8 @@ def test_tiers():
 def test_tools_locked_with_reason():
     tools = {t["id"]: t for t in list_tools("cpu")}
     assert tools["subtitles"]["available"] and tools["subtitles"]["locked_reason"] is None
-    assert not tools["video"]["available"] and "GPU 16GB+" in tools["video"]["locked_reason"]
+    # mọi công cụ hiện chạy được trên CPU; phần cần GPU (lip-sync AI, sinh video AI) khoá ở từng trang, cơ chế khoá theo hạng vẫn hoạt động:
+    assert all(t["available"] for t in list_tools("cpu")) and not tier_allows("cpu", "gpu16plus") and tier_allows("gpu12", "gpu8")
     assert all(t["available"] for t in list_tools("gpu16plus"))
 
 
@@ -74,21 +75,21 @@ def test_project_crud_and_delete_requires_confirm(client):
 
 def test_versions_never_overwrite(client):
     pid = client.post("/projects", json={"name": "V"}).json()["id"]
-    url = f"/projects/{pid}/tools/image/commands"
+    url = f"/projects/{pid}/tools/agent/commands"
     r1 = client.post(url, json={"type": "set-config", "payload": {"config": {"lang": "en"}}, "expectedRevision": 0}).json()
     r2 = client.post(url, json={"type": "set-config", "payload": {"config": {"lang": "ja"}}, "expectedRevision": 1}).json()
     assert (r1["revision"], r2["revision"]) == (1, 2)
-    revs = client.get(f"/projects/{pid}/tools/image/revisions").json()
+    revs = client.get(f"/projects/{pid}/tools/agent/revisions").json()
     assert [r["n"] for r in revs] == [2, 1] and revs[1]["state"] == {"config": {"lang": "en"}}
     # quay lại bản 1 = tạo bản 3, bản 1 và 2 còn nguyên
     r3 = client.post(url, json={"type": "select-revision", "payload": {"revisionId": revs[1]["id"]}, "expectedRevision": 2}).json()
     assert r3["revision"] == 3 and r3["state"]["config"] == {"lang": "en"}
-    assert len(client.get(f"/projects/{pid}/tools/image/revisions").json()) == 3
+    assert len(client.get(f"/projects/{pid}/tools/agent/revisions").json()) == 3
 
 
 def test_revision_conflict(client):
     pid = client.post("/projects", json={"name": "C"}).json()["id"]
-    url = f"/projects/{pid}/tools/image/commands"
+    url = f"/projects/{pid}/tools/agent/commands"
     client.post(url, json={"type": "set-config", "payload": {"config": {}}, "expectedRevision": 0})
     r = client.post(url, json={"type": "set-config", "payload": {"config": {}}, "expectedRevision": 0})
     assert r.status_code == 409 and r.json()["error"]["code"] == "REVISION_CONFLICT"

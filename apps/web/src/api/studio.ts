@@ -214,3 +214,33 @@ export class AvatarLibraryApi {
     return URL.createObjectURL(await r.blob());
   };
 }
+
+// ---------- Tạo ảnh AI & Tạo video (ảnh → chuyển động) ----------
+export interface ImageStatus { engine: string | null; engineInstalled: boolean; model: string; modelInstalled: boolean; supported: boolean; device: string; note: string }
+export interface ImageBrief { prompt: string; aspect: string; quality: "draft" | "standard" | "high"; count: number; seed: number | null; refAsset: string | null; translate: boolean; language: string }
+export interface ImageResult { id: string; file: string; assetId: string; seed: number; width: number; height: number; prompt: string; seconds: number }
+export interface ImageState { brief: ImageBrief; results: ImageResult[]; last: { warnings: string[]; englishPrompt: string } | null }
+
+export class ImageApi {
+  constructor(private api: Api, private pid: string) {}
+  private base = () => `/projects/${this.pid}`;
+  status = () => this.api.req<ImageStatus>("/image/status");
+  state = () => this.api.req<{ revision: number; state: ImageState | Record<string, never> }>(`${this.base()}/tools/image/state`);
+  command = (type: string, payload: object) =>
+    this.api.req<ToolStateResponse>(`${this.base()}/tools/image/commands`, { method: "POST", body: JSON.stringify({ type, payload }) });
+  generate = () => this.api.req<Job>(`${this.base()}/image/generate`, { method: "POST" });
+}
+
+export interface VideoBrief { asset: string | null; duration: number; preset: string; aspect: string; quality: number; fps: number; audio: string | null; strength: number }
+export interface VideoState { brief: VideoBrief; result: { path: string; assetId: string; duration: number; preset: string; generative: boolean } | null }
+export interface VideoEngine { id: string; name: string; available: boolean; implemented: boolean; generative: boolean; note: string }
+
+export class VideoApi {
+  constructor(private api: Api, private pid: string) {}
+  private base = () => `/projects/${this.pid}`;
+  engines = () => this.api.req<VideoEngine[]>("/video/engines");
+  state = () => this.api.req<{ revision: number; state: VideoState | Record<string, never> }>(`${this.base()}/tools/video/state`);
+  command = (type: string, payload: object) =>
+    this.api.req<ToolStateResponse>(`${this.base()}/tools/video/commands`, { method: "POST", body: JSON.stringify({ type, payload }) });
+  render = () => this.api.req<Job>(`${this.base()}/video/render`, { method: "POST" });
+}

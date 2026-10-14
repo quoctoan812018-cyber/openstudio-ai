@@ -196,8 +196,29 @@ Máy kiểm **không có GPU** (Intel Graphics, 15 GB RAM) nên làm theo nguyê
 **Nghiệm thu** — `scripts/e2e_creative.py` (daemon thật + VieNeu thật): giọng Việt 10 s → avatar 16:9 (dài khớp giọng ±0,01 s; độ tối vùng miệng dao động theo giọng thật) → editor 9:16 (thẻ tiêu đề + avatar + chuyển cảnh + chữ + nhạc; 12,04 s so với 12,03 s mong đợi) → 3 thumbnail từ khung hình video: **14/14 đạt**. pytest 183, vitest 45, desktop 6, lint/tsc sạch.
 
 **Không làm được / nói thẳng**
+- *(Cập nhật: tạo ảnh AI và ảnh→video chuyển động đã làm ở mục "Giai đoạn 5B" bên dưới; hai gạch đầu về tạo ảnh/video AI trong danh sách này không còn đúng cho phần ảnh.)*
 - **Lip-sync AI thật (MuseTalk, LatentSync) — chưa làm.** "Puppet" chỉ mở/đóng miệng theo âm lượng, **không khớp khẩu hình từng âm**; hợp ảnh minh hoạ/mascot, với ảnh chụp thật chỉ là hiệu ứng đơn giản (kéo giãn vùng miệng làm méo hàm nhẹ). Hai engine kia hiện trong giao diện với trạng thái khoá + lý do. Việc đọc license MuseTalk/LatentSync và chọn lượng tử hoá vẫn chờ máy có GPU.
 - **Tạo ảnh AI (FLUX…) và tạo video (Wan/LTX…) — chưa làm**, công cụ `image`/`video` giữ nguyên trạng thái khoá theo hạng GPU. Quyết định "thử bản lượng tử hoá FLUX.2 klein ở Giai đoạn 5" **chưa thực hiện được**, cần máy GPU.
 - Editor chỉ có **một track hình tuần tự** (chưa kéo-thả đa track, chưa keyframe, chưa lớp điều chỉnh màu); giao diện là danh sách có ô số, không có timeline đồ hoạ kéo thả. Xem trước là xuất 360p, chưa phát trực tiếp.
 - Thumbnail không tự nhận diện mặt/chủ thể để cắt cho đẹp (chỉ cắt giữa + lệch nhẹ giữa các biến thể).
 - Giao diện 3 trang mới chỉ kiểm bằng vitest cho các hàm/thành phần chính (chưa có test trình duyệt tự động).
+
+## Giai đoạn 5B — Tạo ảnh AI (CPU) và Tạo video từ ảnh: XONG phần chạy được trên CPU (2026-10-14)
+
+Anh chọn FLUX.2 klein 4B và "ảnh → video chuyển động bằng FFmpeg" cho video.
+
+**Đã có**
+- **Tạo ảnh AI** (`image/`): FLUX.2 klein 4B **GGUF Q4_0** + bộ mã hoá chữ **Qwen3-4B Q4_K_M** + VAE, chạy bằng **stable-diffusion.cpp** (`sd-cli`, MIT) trên **CPU**, 4 bước, cfg 1.0. Tất cả **Apache-2.0** (đọc từ HF API), tải qua Model Manager có **SHA-256** (engine ~18 MB + mô hình ~5,3 GB). Prompt tiếng Việt được LLM cục bộ dịch sang tiếng Anh (tuỳ chọn); hỗ trợ ảnh tham chiếu (`-r`), seed, 1–4 biến thể; nhả RAM Ollama trước khi chạy; ảnh vào kho tài nguyên để dùng ở Thumbnail/Editor/Avatar; nhãn "AI tạo" dạng sidecar `.png.json`.
+- **Tạo video** (`video/`): ảnh → clip chuyển động (zoom in/out, lia trái/phải/lên/xuống) bằng `zoompan`, có nhạc/giọng tuỳ chọn, 16:9·9:16·1:1. **Không phải AI sinh video** (UI và API ghi rõ `generative:false`).
+- Agent: `image_generate`, `video_from_image` (cần duyệt). Giao diện: 2 trang mới.
+
+**Đo thật trên máy này (CPU, RAM trống 1–5 GB)**: ảnh 512×512 ≈ **248 s** (≈ 52 s/bước; nạp 15 s + giải mã VAE 26 s); ảnh 512×288 qua daemon ≈ **166 s**. Ảnh lớn hơn chậm theo ~bình phương cạnh (768 px ước ~9 phút, 1024 px ~16 phút — **ước lượng, chưa đo**). Chất lượng ảnh nhìn bằng mắt: tốt (ly cà phê, ánh nắng rõ nét); prompt "cà phê phin" cho ra bình/ly kim loại chứ không đúng dụng cụ phin → mô hình không hiểu chính xác đồ vật đặc thù Việt Nam.
+
+**Nghiệm thu** — `scripts/e2e_images.py`: 9/9 đạt (engine/mô hình nhận đã cài, ảnh thật 313 KB, prompt được dịch, ảnh tự vào kho, nhãn AI, video 9:16 dài 5 s, thumbnail tiếng Việt đè lên ảnh AI). pytest 192, vitest 46.
+
+**Không làm / nói thẳng**
+- **Sinh video bằng AI (Wan, LTX…) vẫn chưa làm** — hiện trong giao diện ở trạng thái khoá; trên CPU không thực tế.
+- **AI vẽ chữ tiếng Việt trong ảnh không đáng tin** → dùng công cụ Thumbnail để thêm chữ.
+- Engine Linux/macOS (`sd-cpp-linux-x64` build trên Ubuntu 24.04, `sd-cpp-macos-arm64` build trên macOS 26) **chưa chạy thử**; có thể không chạy trên bản OS cũ hơn (Docker `bookworm`).
+- Chưa thử Vulkan/iGPU (có bản `win-vulkan` của sd.cpp) — có thể nhanh hơn trên Intel Graphics nhưng chưa kiểm chứng.
+- Chưa có template "prompt" cho ảnh; chưa có inpainting/ControlNet.

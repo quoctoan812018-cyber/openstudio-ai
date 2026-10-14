@@ -18,7 +18,9 @@ Bộ công cụ sáng tạo nội dung AI chạy **cục bộ trên máy bạn**
 | **Chỉnh sửa video** | Cắt/ghép, tốc độ, chuyển cảnh, chữ, ảnh chèn, nhạc nền tự hạ khi có lời, xem trước nhanh, 16:9 · 9:16 · 1:1 (FFmpeg) | CPU |
 | **Thumbnail & Template** | Ảnh/khung hình + tiêu đề tiếng Việt, nhiều biến thể; template dùng lại | CPU |
 | **Avatar AI (hoạt hình theo giọng)** | Ảnh chân dung nói theo giọng, ghép nền/khung/phụ đề; ảnh người thật cần xác nhận đồng ý. *Không phải lip-sync AI* | CPU |
-| Lip-sync AI, tạo ảnh/video AI | **Chưa làm** (cần GPU; công cụ bị khoá trên máy không đủ VRAM) | GPU |
+| **Tạo ảnh AI** | FLUX.2 klein 4B lượng tử (Apache-2.0) chạy trên CPU qua stable-diffusion.cpp — **chậm** (~3–4 phút cho ảnh 512 px); tải ~5 GB một lần | CPU (chậm) |
+| **Tạo video từ ảnh** | Zoom/lia máy trên ảnh tĩnh (FFmpeg). *Không phải AI sinh video* | CPU |
+| Lip-sync AI, sinh video AI | **Chưa làm** (cần GPU lớn) | GPU |
 
 Chi tiết tiến độ, rủi ro và giới hạn trung thực: [docs/PROGRESS.md](docs/PROGRESS.md) · kiểm tra phát hành: [docs/RELEASE_CHECK.md](docs/RELEASE_CHECK.md) · kiến trúc: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

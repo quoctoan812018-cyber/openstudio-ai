@@ -33,6 +33,8 @@ class Services:
     editor: Any = None
     avatar: Any = None
     assets: Any = None
+    image: Any = None
+    video: Any = None
 
 
 @dataclass
@@ -49,7 +51,7 @@ class NoArgs(BaseModel):
 
 
 class GetState(BaseModel):
-    tool: Literal["subtitles", "tts", "dubbing", "highlights", "podcast", "campaign", "thumbnail", "editor", "avatar"] = Field(description="công cụ cần xem trạng thái")
+    tool: Literal["subtitles", "tts", "dubbing", "highlights", "podcast", "campaign", "thumbnail", "editor", "avatar", "image", "video"] = Field(description="công cụ cần xem trạng thái")
 
 
 class FetchUrl(BaseModel):
@@ -133,6 +135,20 @@ class ThumbMake(BaseModel):
     aspect: Literal["16:9", "9:16", "1:1"] = "16:9"
     count: int = Field(default=3, ge=1, le=6)
     background_asset: str | None = Field(default=None, description="id tài nguyên ảnh/video làm nền (không có → nền gradient)")
+
+
+class ImageMake(BaseModel):
+    prompt: str = Field(min_length=3, max_length=1500, description="mô tả ảnh (tiếng Việt hoặc Anh); đừng yêu cầu vẽ chữ trong ảnh")
+    aspect: Literal["1:1", "16:9", "9:16", "4:3", "3:4"] = "1:1"
+    quality: Literal["draft", "standard", "high"] = Field(default="draft", description="draft 512px ≈ 4 phút/ảnh trên CPU; cao hơn chậm hơn nhiều")
+    count: int = Field(default=1, ge=1, le=4)
+
+
+class MotionVideo(BaseModel):
+    asset: str = Field(description="id tài nguyên ảnh")
+    preset: Literal["zoom-in", "zoom-out", "pan-left", "pan-right", "pan-up", "pan-down"] = "zoom-in"
+    duration: float = Field(default=6.0, ge=1, le=60)
+    aspect: Literal["16:9", "9:16", "1:1"] = "16:9"
 
 
 class EditorRender(BaseModel):
@@ -290,6 +306,10 @@ def summarize_state(tool: str, st: dict) -> dict:
                 "texts": len(st.get("texts", [])), "overlays": len(st.get("overlays", [])), "music": bool((st.get("music") or {}).get("asset")), "result": st.get("result")}
     if tool == "thumbnail":
         return {"brief": st.get("brief"), "variants": [v["file"] for v in st.get("variants", [])]}
+    if tool == "image":
+        return {"brief": st.get("brief"), "results": [{k: r[k] for k in ("id", "file", "assetId", "seed")} for r in st.get("results", [])[:8]]}
+    if tool == "video":
+        return {"brief": st.get("brief"), "result": st.get("result")}
     if tool == "avatar":
         return {"brief": st.get("brief"), "result": st.get("result")}
     if tool == "tts":
@@ -434,6 +454,14 @@ def build_tools(s: Services) -> dict[str, ToolSpec]:
         cmd(ctx, "thumbnail", "set-brief", {"brief": {"title": a.title, "subtitle": a.subtitle or "", "aspect": a.aspect, "count": a.count, "background": bg}})
         return _job(s.thumb.start(ctx.pid))
 
+    def image_make(a: ImageMake, ctx: AgentCtx) -> dict:
+        cmd(ctx, "image", "set-brief", {"brief": {"prompt": a.prompt, "aspect": a.aspect, "quality": a.quality, "count": a.count}})
+        return _job(s.image.start(ctx.pid))
+
+    def motion_video(a: MotionVideo, ctx: AgentCtx) -> dict:
+        cmd(ctx, "video", "set-brief", {"brief": {"asset": a.asset, "preset": a.preset, "duration": a.duration, "aspect": a.aspect}})
+        return _job(s.video.start(ctx.pid))
+
     def editor_render(a: EditorRender, ctx: AgentCtx) -> dict:
         return _job(s.editor.start_render(ctx.pid, a.preview))
 
@@ -508,6 +536,8 @@ def build_tools(s: Services) -> dict[str, ToolSpec]:
         T("campaign_assets", "Tạo caption, hashtag, kịch bản, thumbnail, phụ đề bản địa hoá cho từng bài trong kế hoạch.", CampAssets, camp_assets),
         T("campaign_export", "Xuất gói chiến dịch: thư mục theo thị trường/nền tảng, schedule.csv, zip.", NoArgs, camp_export),
         T("thumbnail_make", "Tạo vài biến thể thumbnail/ảnh bìa có tiêu đề tiếng Việt từ ảnh, khung hình video hoặc nền gradient.", ThumbMake, thumb_make),
+        T("image_generate", "Tạo ảnh bằng AI cục bộ (FLUX.2 klein, CPU, mỗi ảnh vài phút) từ mô tả; ảnh vào kho tài nguyên.", ImageMake, image_make, APPROVAL_RENDER),
+        T("video_from_image", "Biến một ảnh thành video chuyển động (zoom/lia máy, FFmpeg). KHÔNG phải AI sinh video.", MotionVideo, motion_video, APPROVAL_RENDER),
         T("editor_render", "Xuất (hoặc xem trước nhanh) video từ dòng thời gian chỉnh sửa hiện có của project.", EditorRender, editor_render, APPROVAL_RENDER),
         T("avatar_make", "Tạo video avatar nói (hoạt hình theo giọng, CPU) từ avatar trong thư viện + audio. Không phải lip-sync AI.", AvatarMake, avatar_make, APPROVAL_RENDER),
         T("speak_text", "Đọc một đoạn văn bản thành file âm thanh.", Speak, speak),

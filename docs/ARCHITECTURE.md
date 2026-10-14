@@ -236,6 +236,10 @@ Agent: `campaign_setup|plan|assets|export` (+ `get_state` tool `campaign`); skil
 - **`templates.py`**: `templates/<id>/template.json` (có sẵn, chỉ đọc) + `<data>/templates/` (người dùng); `kind` = `thumbnail|editor`; chỉ là cấu hình JSON.
 - **`avatar/`**: `library.py` (avatar + consent `face`, dùng một lần, kiểm lại lúc xuất), `engine.py` (đường bao biên độ → 12 mức mở miệng dựng sẵn → ghép nền, ghi khung thô vào ffmpeg qua stdin), `service.py` (job `avatar.render`, kiểm tra phụ đề/audio lệch). `GET /avatar/engines` trả trạng thái thật: chỉ `puppet` được cài; `musetalk`, `latentsync` hiện là "chưa tích hợp / cần GPU".
 
+## 8i. Tạo ảnh AI và Tạo video từ ảnh (GĐ5B)
+- **`image/`**: `engine.py` chọn bản `sd-cli` theo hệ điều hành (`sd-cpp-<os>-<arch>` trong registry, `models/engines/<id>/sd.zip` do Model Manager tải rồi giải nén một lần, chống zip-slip), dựng lệnh (`--steps 4 --cfg-scale 1.0`, `--vae-tiling` khi ≥ 1024 px, `-r` cho ảnh tham chiếu), đọc tiến độ bước từ stdout/stderr (`run_process(..., on_err_line=…)`). `service.py`: job `image.generate` (dịch prompt bằng LLM → nhả Ollama → từng biến thể một tiến trình `sd-cli` → đăng ký vào kho tài nguyên → sidecar nhãn AI). `GET /image/status`, `POST /projects/{id}/image/generate`.
+- **`video/`**: `zoompan_filter` (hàm thuần) + job `video.motion`; `GET /video/engines` liệt kê rõ engine `motion` (generative=false) và `wan2.2-ti2v-5b` (khoá, chưa tích hợp).
+
 ## 9. Quyết định đã chốt / chờ duyệt
 Đã chốt (2026-10-13):
 1. Daemon: Python/FastAPI.

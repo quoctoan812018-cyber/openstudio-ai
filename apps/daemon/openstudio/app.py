@@ -48,6 +48,10 @@ from .thumbnail.service import ThumbnailService
 from .avatar.api import build_router as avatar_router
 from .avatar.library import AvatarLibrary
 from .avatar.service import AvatarService
+from .image.api import build_router as image_router
+from .image.service import ImageService
+from .video.api import build_router as video_router
+from .video.service import VideoService
 from .campaign.api import build_router as campaign_router
 from .campaign.service import CampaignService
 from .podcast.api import build_router as podcast_router
@@ -89,10 +93,12 @@ def create_app(settings: Settings, token: str, client_factory: Callable[[], http
     thumbnail = ThumbnailService(settings, repo, runner, assets)
     avatar = AvatarService(settings, repo, runner, assets, AvatarLibrary(settings.avatars_dir, consents), subtitles)
     template_store = TemplateStore(settings)
+    image = ImageService(settings, repo, runner, assets, models, llm)
+    video = VideoService(settings, repo, runner, assets)
 
     # ---- Agent: dùng ĐÚNG các service ở trên (cùng state machine với giao diện) ----
     ao = {"scheduler": True, "approval_timeout": 24 * 3600.0, "max_steps": 14, "mcp": settings.mcp_servers, **(agent_opts or {})}
-    services = Services(settings, repo, runner, models, subtitles, tts, dubbing, highlights, podcast, music, llm, campaign, thumbnail, editor, avatar, assets)
+    services = Services(settings, repo, runner, models, subtitles, tts, dubbing, highlights, podcast, music, llm, campaign, thumbnail, editor, avatar, assets, image, video)
     mcp = McpManager(ao["mcp"])
     agent_tools = {**build_tools(services), **mcp.specs()}
     thread_store = ThreadStore(db, bus)
@@ -313,6 +319,8 @@ def create_app(settings: Settings, token: str, client_factory: Callable[[], http
     app.include_router(thumbnail_router(thumbnail, [Depends(auth)]))
     app.include_router(avatar_router(avatar, hw["tier"], [Depends(auth)]))
     app.include_router(templates_router(template_store, [Depends(auth)]))
+    app.include_router(image_router(image, [Depends(auth)]))
+    app.include_router(video_router(video, hw["tier"], [Depends(auth)]))
     app.state.tts = tts
     app.include_router(agent_router(agent, thread_store, skill_store, schedule_store, mcp, repo, run_schedule, [Depends(auth)]))
     app.state.agent, app.state.scheduler, app.state.skills = agent, scheduler, skill_store

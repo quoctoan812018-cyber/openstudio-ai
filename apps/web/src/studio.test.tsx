@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { CampaignPost, Clip, PodcastScript, Segment } from "./api/studio";
 import { I18nProvider } from "./i18n";
 import { canCreateAvatar } from "./pages/Avatar";
+import { estimateMinutes } from "./pages/ImageGen";
 import { PostRow } from "./pages/Campaign";
 import { SegmentRow, totalLength } from "./pages/Editor";
 import { ClipCard } from "./pages/Highlights";
@@ -153,5 +154,14 @@ describe("Avatar consent gating", () => {
     expect(canCreateAvatar({ name: "A", file, realPerson: true, subject: "Lan", confirmed: true })).toBe(true);
     expect(canCreateAvatar({ name: "A", file, realPerson: false, subject: "", confirmed: false })).toBe(true);
     expect(canCreateAvatar({ name: "A", file: null, realPerson: false, subject: "", confirmed: false })).toBe(false);
+  });
+});
+
+describe("Image generation estimate", () => {
+  it("ước lượng thời gian tăng theo bình phương cạnh dài và theo số ảnh", () => {
+    expect(estimateMinutes("draft", 1)).toBe(4);
+    expect(estimateMinutes("standard", 1)).toBe(9);
+    expect(estimateMinutes("high", 1)).toBe(16);
+    expect(estimateMinutes("draft", 3)).toBe(12);
   });
 });
