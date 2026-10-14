@@ -1,0 +1,64 @@
+[project]
+name = "openstudio-daemon"
+version = "0.1.0"
+description = "OpenStudio AI local runtime (FastAPI)"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "pydantic>=2.7",
+  "pyyaml>=6",
+  "httpx>=0.27",
+  "psutil>=5.9",
+  "faster-whisper>=1.2.1",
+  "yt-dlp>=2026.8.19",
+  "vieneu>=3.8.3",
+  "kokoro-onnx>=0.6.1",
+  "soundfile>=0.14.0",
+  "demucs>=4.0.1",
+  "tzdata>=2026.5",
+  "torch>=2.1",         # khai báo trực tiếp để gắn chỉ mục CPU trên Linux (xem [tool.uv.sources])
+  "torchaudio>=2.1",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+# Linux: bản torch mặc định trên PyPI kèm CUDA (~2.5 GB). OpenStudio chạy được trên CPU nên lấy bản CPU nhẹ.
+# Windows/macOS: wheel PyPI đã là bản CPU/MPS gọn.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchaudio = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 180            # code dự án viết gọn theo dòng dài; chỉ bắt lỗi thật, không ép định dạng
+target-version = "py311"
+extend-exclude = ["tests/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP", "S"]
+ignore = [
+  "E501", "E701", "E702", "E731", "E741",
+  "B008", "B904", "B905", "B017",
+  "S101",    # assert trong test
+  "S603", "S607",   # subprocess với danh sách tham số, đường dẫn do ứng dụng kiểm soát (ffmpeg/uv)
+  "S310", "S311", "S324", "S108", "S110", "S112", "S105", "S106", "S104",
+  "UP007", "UP037", "UP045", "UP035", "UP006", "UP017",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*" = ["S", "B", "F841"]
