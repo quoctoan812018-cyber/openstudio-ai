@@ -1,0 +1,24 @@
+{
+  "name": "@openstudio/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "OpenStudio AI — AI content studio chạy cục bộ",
+  "author": "OpenStudio AI contributors",
+  "license": "Apache-2.0",
+  "main": "src/main.cjs",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "smoke": "electron . --smoke",
+    "test": "node --test \"test/*.test.cjs\"",
+    "pack": "electron-builder --dir",
+    "dist:win": "electron-builder --win --x64",
+    "dist:linux": "electron-builder --linux --x64",
+    "dist:mac:arm64": "electron-builder --mac --arm64",
+    "dist:mac:x64": "electron-builder --mac --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

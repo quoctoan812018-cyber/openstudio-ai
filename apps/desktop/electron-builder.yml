@@ -1,0 +1,38 @@
+# Đóng gói OpenStudio AI (mỗi lần build một nền tảng/kiến trúc vì uv đi kèm phụ thuộc kiến trúc). Trước khi build: `pnpm build:web` và `node scripts/fetch-uv.mjs <win32|darwin|linux> <x64|arm64>` (ghi vào apps/desktop/build/uv).
+# Python + thư viện KHÔNG nằm trong gói: lần chạy đầu app dùng uv đi kèm để tạo môi trường theo uv.lock (cần mạng).
+appId: ai.openstudio.app
+productName: OpenStudio AI
+copyright: Apache-2.0
+directories:
+  output: ../../dist/installers
+files:
+  - src/**
+  - package.json
+asar: true
+extraResources:
+  - from: ../daemon
+    to: daemon
+    filter: ["pyproject.toml", "uv.lock", "openstudio/**/*", "!**/__pycache__/**", "!**/*.pyc"]
+  - { from: ../web/dist, to: web }
+  - { from: ../../skills, to: skills }
+  - { from: ../../templates, to: templates }
+  - { from: ../../models/registry.yaml, to: models/registry.yaml }
+  - { from: ../../config.toml, to: config.toml }
+  - { from: ../../LICENSE, to: LICENSE }
+  - { from: build/uv, to: uv }
+win:
+  target: [{ target: nsis, arch: [x64] }]
+  artifactName: OpenStudio-AI-${version}-win-x64.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target: [{ target: dmg, arch: [arm64, x64] }]
+  category: public.app-category.video
+  artifactName: OpenStudio-AI-${version}-mac-${arch}.${ext}
+linux:
+  target: [{ target: AppImage, arch: [x64] }]
+  category: AudioVideo
+  executableName: openstudio-ai
+  artifactName: OpenStudio-AI-${version}-linux-x64.${ext}
