@@ -9,6 +9,7 @@ from typing import Callable
 
 from .errors import ApiError
 from .security import redact
+from .jobs import JobCancelled
 from .workers.runner import run_process
 
 
@@ -61,3 +62,25 @@ def run_ffmpeg(args: list[str], duration: float, cwd: Path, *, on_progress: Call
     code, tail = run_process(cmd, cwd=cwd, on_line=on_line, cancelled=cancelled)
     if code != 0:
         raise ApiError(422, "FFMPEG_FAILED", "FFmpeg lỗi: " + redact(tail[-400:]))
+
+
+def run_ffmpeg_piped(args: list[str], frames, total: int, cwd: Path, *, on_progress: Callable[[float], None],
+                     cancelled: Callable[[], bool]) -> None:
+    """Chạy ffmpeg đọc khung thô từ stdin (`-i pipe:0`); `frames` là iterator bytes. Báo tiến độ theo số khung, huỷ được."""
+    cmd = [_exe("ffmpeg"), "-y", "-v", "error", "-nostats", *args]
+    proc = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    try:
+        for i, buf in enumerate(frames, 1):
+            if cancelled():
+                proc.kill()
+                proc.wait()
+                raise JobCancelled()
+            proc.stdin.write(buf)
+            if i % 10 == 0 or i == total:
+                on_progress(min(99.0, i / max(1, total) * 100))
+        proc.stdin.close()
+    except BrokenPipeError:
+        pass                                         # ffmpeg thoát sớm → lỗi được báo bên dưới
+    err = proc.stderr.read().decode("utf-8", "replace")
+    if proc.wait() != 0:
+        raise ApiError(422, "FFMPEG_FAILED", "FFmpeg lỗi: " + redact(err[-400:]))

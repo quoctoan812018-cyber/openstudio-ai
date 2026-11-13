@@ -293,7 +293,7 @@ capabilities:
       commercial_ok: true
       non_commercial: false
       tier: cpu
-      verified: false  # chưa chạy thử trên Linux
+      verified: true   # chạy thật 2026-11-13 trên Ubuntu 24.04 (container 4 nhân, không GPU): ảnh 512×912 ≈ 8 phút; SHA-256 khớp
       download:
         dest: engines/sd-cpp-linux-x64
         files:

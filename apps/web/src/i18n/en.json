@@ -430,12 +430,21 @@
   "img.finalPrompt": "Prompt used",
   "img.aiLabel": "AI-generated images; a .png.json file beside each image records the AI label. Do not ask the AI to draw Vietnamese text — add it with the Thumbnail tool.",
   "vid.title": "Video",
-  "vid.subtitle": "Turn an image (including an AI image you just made) into a moving video with zoom/pan. This is NOT AI video generation — that needs a large GPU.",
+  "vid.subtitle": "Turn an image (including an AI image you just made) into a video: zoom/pan or a still camera, plus falling petals. This is NOT AI video generation — that needs a large GPU.",
   "vid.notAi": "Camera motion over a still image, not AI-generated video.",
   "vid.source": "Image and audio",
   "vid.useImage": "Use as image",
   "vid.noImage": "No image selected",
   "vid.motion": "Motion",
   "vid.preset": "Style",
-  "vid.render": "Create video"
+  "vid.render": "Create video",
+  "vid.overlay": "Effect",
+  "vid.overlay.none": "None",
+  "vid.overlay.petals": "Falling petals",
+  "vid.density": "Density (petals/s)",
+  "vid.originX": "Source X",
+  "vid.originY": "Source Y",
+  "vid.floor": "Table Y",
+  "vid.seed": "Seed",
+  "vid.overlayHint": "Coordinates are fractions of the frame (0 = left/top, 1 = right/bottom). Empty source = fall from the top edge; empty table = fall out of frame. Petals are drawn by code, not AI."
 }

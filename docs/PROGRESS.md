@@ -222,3 +222,20 @@ Anh chọn FLUX.2 klein 4B và "ảnh → video chuyển động bằng FFmpeg" 
 - Engine Linux/macOS (`sd-cpp-linux-x64` build trên Ubuntu 24.04, `sd-cpp-macos-arm64` build trên macOS 26) **chưa chạy thử**; có thể không chạy trên bản OS cũ hơn (Docker `bookworm`).
 - Chưa thử Vulkan/iGPU (có bản `win-vulkan` của sd.cpp) — có thể nhanh hơn trên Intel Graphics nhưng chưa kiểm chứng.
 - Chưa có template "prompt" cho ảnh; chưa có inpainting/ControlNet.
+
+## Giai đoạn 5C — Lớp hiệu ứng "cánh hoa rơi" cho Tạo video: XONG (2026-11-13)
+
+Mục tiêu: dựng kiểu video "tranh gouache tĩnh vật, cánh hoa rơi" (9:16, ~20 s) hoàn toàn cục bộ, không GPU.
+
+**Đã có**
+- `video/particles.py`: hệ hạt cánh hoa vẽ bằng numpy — rơi có tăng tốc nhẹ, lắc ngang, lật mặt (bề rộng co giãn), đáp xuống "mặt bàn" và nằm yên 4–8 s rồi mờ đi; bóng đổ mềm; bảng màu ấm; **tất định theo seed**.
+- Công cụ Video: preset `still` (máy đứng yên), brief mới `overlay` (`none`/`petals`), `overlayDensity`, `overlayOrigin` [x,y], `overlayFloor`, `overlaySeed`. Khung RGBA được đẩy qua pipe vào FFmpeg (`media.run_ffmpeg_piped`, huỷ được, báo tiến độ theo khung) rồi `overlay` lên ảnh nền.
+- Giao diện: chọn hiệu ứng + các ô số (vi/en). `numpy` khai báo trực tiếp trong `pyproject.toml`.
+- Engine `sd-cpp-linux-x64` **lần đầu chạy thật** (Ubuntu 24.04, 4 nhân, không GPU): ảnh FLUX.2 klein 512×912 mất **7 phút 57 giây** (≈110 s/bước, giải mã VAE 54 s).
+
+**Nghiệm thu**: ảnh FLUX 9:16 → daemon thật → video 720×1280, 30 fps, 20,0 s, có nhạc; dựng 600 khung mất **15 s**. Kiểm bằng mắt: cánh hoa rơi từ bó hoa, đọng trên bàn. pytest 197 (thêm 5 test lớp hạt), vitest 46, tsc/ruff sạch.
+
+**Không làm / nói thẳng**
+- Đây là **hoạt hoạ bằng code**, không phải AI sinh video: cánh hoa trên bình **không mất đi** khi rơi, hoa không lay động. Muốn thế cần mô hình ảnh→video (Wan/LTX) trên GPU.
+- Cánh hoa là hình giọt mềm tô màu đặc, chưa có vân cọ như ảnh nền; điểm rơi/mặt bàn người dùng tự nhập tỉ lệ (chưa tự dò).
+- Chưa có thư viện nhạc CC0 trong repo; video mẫu dùng nhạc pad tổng hợp bằng FFmpeg (ngoài repo).

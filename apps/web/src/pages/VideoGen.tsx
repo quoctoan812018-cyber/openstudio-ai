@@ -10,8 +10,19 @@ import { JobList, useProjectJobs } from "../lib/useJobs";
 const btn = "rounded bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500 disabled:opacity-50";
 const field = "rounded border px-2 py-1 text-sm dark:bg-zinc-800";
 const card = "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900";
-const PRESETS = ["zoom-in", "zoom-out", "pan-left", "pan-right", "pan-up", "pan-down"];
-const EMPTY: VideoState = { brief: { asset: null, duration: 6, preset: "zoom-in", aspect: "16:9", quality: 720, fps: 25, audio: null, strength: 0.25 }, result: null };
+const PRESETS = ["still", "zoom-in", "zoom-out", "pan-left", "pan-right", "pan-up", "pan-down"];
+const EMPTY: VideoState = { brief: { asset: null, duration: 6, preset: "zoom-in", aspect: "16:9", quality: 720, fps: 25, audio: null, strength: 0.25,
+  overlay: "none", overlayDensity: 1.5, overlayOrigin: null, overlayFloor: null, overlaySeed: 1 }, result: null };
+
+/** Ô số gửi khi rời ô; rỗng = null. */
+function Num({ label, value, min, max, step, onCommit }: { label: string; value: number | null; min: number; max: number; step: number; onCommit: (v: number | null) => void }) {
+  return (
+    <label>{label}{" "}
+      <input aria-label={label} type="number" min={min} max={max} step={step} className={`${field} w-20`} defaultValue={value ?? ""} key={String(value)}
+        onBlur={(e) => { const v = e.target.value === "" ? null : Number(e.target.value); if (v !== value) onCommit(v); }} />
+    </label>
+  );
+}
 
 function Workspace({ pid }: { pid: string }) {
   const api = useApi();
@@ -73,6 +84,23 @@ function Workspace({ pid }: { pid: string }) {
             <select aria-label={t("ed.quality")} className={field} value={b.quality} onChange={(e) => void setBrief({ quality: Number(e.target.value) })}>{[480, 720, 1080].map((x) => <option key={x} value={x}>{x}p</option>)}</select>
           </label>
         </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+          <label>{t("vid.overlay")}{" "}
+            <select aria-label={t("vid.overlay")} className={field} value={b.overlay} onChange={(e) => void setBrief({ overlay: e.target.value })}>
+              <option value="none">{t("vid.overlay.none")}</option><option value="petals">{t("vid.overlay.petals")}</option>
+            </select>
+          </label>
+          {b.overlay !== "none" && <>
+            <Num label={t("vid.density")} value={b.overlayDensity} min={0.1} max={10} step={0.1} onCommit={(v) => void setBrief({ overlayDensity: v ?? 1.5 })} />
+            <Num label={t("vid.originX")} value={b.overlayOrigin?.[0] ?? null} min={0} max={1} step={0.05}
+              onCommit={(v) => void setBrief({ overlayOrigin: v === null ? null : [v, b.overlayOrigin?.[1] ?? 0.35] })} />
+            <Num label={t("vid.originY")} value={b.overlayOrigin?.[1] ?? null} min={0} max={1} step={0.05}
+              onCommit={(v) => void setBrief({ overlayOrigin: v === null ? null : [b.overlayOrigin?.[0] ?? 0.5, v] })} />
+            <Num label={t("vid.floor")} value={b.overlayFloor} min={0} max={1} step={0.05} onCommit={(v) => void setBrief({ overlayFloor: v })} />
+            <Num label={t("vid.seed")} value={b.overlaySeed} min={0} max={2147483647} step={1} onCommit={(v) => void setBrief({ overlaySeed: v ?? 1 })} />
+          </>}
+        </div>
+        {b.overlay !== "none" && <p className="mt-1 text-xs text-zinc-500">{t("vid.overlayHint")}</p>}
         <div className="mt-3"><button className={btn} disabled={running || !b.asset} onClick={() => void run(() => vd.render())}>{t("vid.render")}</button></div>
         {url && st.result && (
           <div className="mt-3">

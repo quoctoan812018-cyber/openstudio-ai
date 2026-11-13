@@ -1,4 +1,5 @@
-"""Ảnh → video chuyển động (FFmpeg `zoompan`). KHÔNG sinh nội dung mới như mô hình AI; chỉ làm ảnh tĩnh "sống" hơn bằng chuyển động máy quay."""
+"""Ảnh → video chuyển động (FFmpeg `zoompan`) + lớp hạt vẽ bằng code (cánh hoa rơi, `particles.py`).
+KHÔNG sinh nội dung mới như mô hình AI; chỉ làm ảnh tĩnh "sống" hơn."""
 from __future__ import annotations
 
 import time
@@ -8,15 +9,16 @@ from ..config import Settings
 from ..editor.render import canvas
 from ..errors import ApiError
 from ..jobs import JobContext, JobRunner
-from ..media import run_ffmpeg
+from ..media import run_ffmpeg, run_ffmpeg_piped
 from ..repo import Repo
+from . import particles
 from .state import TOOL, initial_state, reducer
 
 
 def engines(machine_tier: str) -> list[dict]:
     return [
         {"id": "motion", "name": "Ảnh → video chuyển động (FFmpeg)", "available": True, "implemented": True, "generative": False, "minTier": "cpu",
-         "note": "Zoom/lia máy trên ảnh tĩnh. Không phải AI sinh video."},
+         "note": "Zoom/lia máy hoặc đứng yên trên ảnh tĩnh, thêm lớp cánh hoa rơi vẽ bằng code. Không phải AI sinh video."},
         {"id": "wan2.2-ti2v-5b", "name": "Wan2.2 TI2V 5B (sinh video AI)", "available": machine_tier == "gpu16plus", "implemented": False, "generative": True, "minTier": "gpu16plus",
          "note": "Cần GPU ≥ 16 GB VRAM; chưa tích hợp (không thể kiểm thử trên máy CPU; trên CPU một clip vài giây mất hàng giờ)."},
     ]
@@ -28,6 +30,7 @@ def zoompan_filter(preset: str, frames: int, w: int, h: int, fps: int, strength:
     t = f"(on/{n})"
     k = f"{strength:.3f}"
     z, x, y = {
+        "still": ("1", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),
         "zoom-in": (f"1+{k}*{t}", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),
         "zoom-out": (f"1+{k}*(1-{t})", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),
         "pan-left": (f"1+{k}", f"(iw-iw/zoom)*(1-{t})", "ih/2-(ih/zoom/2)"),
@@ -81,12 +84,25 @@ class VideoService:
             maps += ["-map", "1:a"]
             audio = ["-af", f"afade=t=out:st={max(0.0, dur - 1.5):.2f}:d=1.5", "-c:a", "aac", "-b:a", "160k"]
         ctx.progress("render", 2, "Dựng chuyển động")
-        run_ffmpeg([*inputs, "-vf", zoompan_filter(b["preset"], frames, w, h, fps, float(b["strength"])), *maps, "-frames:v", str(frames), "-t", f"{dur:.3f}",
-                    "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", *audio, "-movflags", "+faststart", name], dur, out_dir,
-                   on_progress=lambda p: ctx.progress("render", p, "Dựng chuyển động"), cancelled=ctx.cancelled)
+        motion = zoompan_filter(b["preset"], frames, w, h, fps, float(b["strength"]))
+        tail = ["-frames:v", str(frames), "-t", f"{dur:.3f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", *audio,
+                "-movflags", "+faststart", name]
+        report = lambda p: ctx.progress("render", p, "Dựng chuyển động")  # noqa: E731
+        if b["overlay"] == "none":
+            run_ffmpeg([*inputs, "-vf", motion, *maps, *tail], dur, out_dir, on_progress=report, cancelled=ctx.cancelled)
+        else:
+            origin = tuple(b["overlayOrigin"]) if b["overlayOrigin"] else None
+            petals = particles.spawn(dur, w, h, density=float(b["overlayDensity"]), origin=origin,
+                                     floor=b["overlayFloor"], seed=int(b["overlaySeed"]))
+            n_in = 2 if b["audio"] else 1
+            pipe_in = ["-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{w}x{h}", "-r", str(fps), "-i", "pipe:0"]
+            graph = f"[0:v]{motion}[bg];[bg][{n_in}:v]overlay=format=auto,format=yuv420p[v]"
+            vmaps = ["-map", "[v]"] + (["-map", "1:a"] if b["audio"] else [])
+            run_ffmpeg_piped([*inputs, *pipe_in, "-filter_complex", graph, *vmaps, *tail],
+                             particles.frames(petals, w, h, fps, frames), frames, out_dir, on_progress=report, cancelled=ctx.cancelled)
         rel = f"exports/video/{name}"
         asset = self.assets.register_existing(pid, rel, name)
-        result = {"path": rel, "assetId": asset["id"], "duration": dur, "preset": b["preset"], "generative": False}
+        result = {"path": rel, "assetId": asset["id"], "duration": dur, "preset": b["preset"], "overlay": b["overlay"], "generative": False}
         self.commit(pid, "_set-result", {"result": result})
         ctx.progress("done", 100, "Hoàn tất")
         return result

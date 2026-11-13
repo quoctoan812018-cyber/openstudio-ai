@@ -20,6 +20,7 @@ dependencies = [
   "tzdata>=2026.5",
   "torch>=2.1",         # khai báo trực tiếp để gắn chỉ mục CPU trên Linux (xem [tool.uv.sources])
   "torchaudio>=2.1",
+  "numpy>=1.26",
 ]
 
 [dependency-groups]

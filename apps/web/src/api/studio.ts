@@ -231,8 +231,11 @@ export class ImageApi {
   generate = () => this.api.req<Job>(`${this.base()}/image/generate`, { method: "POST" });
 }
 
-export interface VideoBrief { asset: string | null; duration: number; preset: string; aspect: string; quality: number; fps: number; audio: string | null; strength: number }
-export interface VideoState { brief: VideoBrief; result: { path: string; assetId: string; duration: number; preset: string; generative: boolean } | null }
+export interface VideoBrief {
+  asset: string | null; duration: number; preset: string; aspect: string; quality: number; fps: number; audio: string | null; strength: number;
+  overlay: "none" | "petals"; overlayDensity: number; overlayOrigin: [number, number] | null; overlayFloor: number | null; overlaySeed: number;
+}
+export interface VideoState { brief: VideoBrief; result: { path: string; assetId: string; duration: number; preset: string; overlay?: string; generative: boolean } | null }
 export interface VideoEngine { id: string; name: string; available: boolean; implemented: boolean; generative: boolean; note: string }
 
 export class VideoApi {
